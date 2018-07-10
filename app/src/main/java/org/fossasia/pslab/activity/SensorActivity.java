@@ -1,13 +1,11 @@
 package org.fossasia.pslab.activity;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -89,6 +87,7 @@ public class SensorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (scienceLab.isConnected()) {
+                    tvSensorScan.setText(getResources().getString(R.string.scanning));
                     new Thread(scanRunnable).start();
                 } else {
                     Toast.makeText(getApplicationContext(), getString(R.string.device_not_connected), Toast.LENGTH_SHORT).show();
@@ -138,6 +137,9 @@ public class SensorActivity extends AppCompatActivity {
                 }
             }
         });
+
+        Thread scanner = new Thread(scanRunnable);
+        scanner.start();
     }
 
     private void populateSensors() {
@@ -145,12 +147,11 @@ public class SensorActivity extends AppCompatActivity {
         dataName.clear();
         dataAddress.clear();
         try {
-            tvSensorScan.setText(getResources().getString(R.string.scanning));
             data = i2c.scan(null);
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
-        if (data != null) {
+        if (data.size() != 0) {
             for (Integer myInt : data) {
                 if (myInt != null && sensorAddr.get(myInt) != null) {
                     dataAddress.add(String.valueOf(myInt));
@@ -162,8 +163,7 @@ public class SensorActivity extends AppCompatActivity {
                 tvData += s + ":" + sensorAddr.get(Integer.parseInt(s)) + "\n";
             }
 
-        }
-        else {
+        } else {
             tvData = getResources().getString(R.string.sensor_not_connected);
         }
 
